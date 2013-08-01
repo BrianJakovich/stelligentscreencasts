@@ -1,0 +1,1 @@
+default['jenkins']['url'] =  "http://mirrors.jenkins-ci.org/war/latest/jenkins.war"
