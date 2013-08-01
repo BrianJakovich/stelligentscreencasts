@@ -1,0 +1,11 @@
+{
+	"name" : "jenkins",
+	"chef_type" : "role",
+	"json_class" : "Chef::Role",
+	"description" : "Role for setting up a Jenkins server",
+
+	"run_list" : [
+		"recipe[tomcat]",
+		"recipe[jenkins]"
+	]
+}
