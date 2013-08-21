@@ -23,6 +23,40 @@
   },
 
   "Resources" : {
+    "RootRole" : {
+      "Type" : "AWS::IAM::Role",
+      "Properties" : {
+        "AssumeRolePolicyDocument" : {
+          "Statement" : [{
+            "Effect" : "Allow",
+            "Principal" : {
+              "Service" : [ "ec2.amazonaws.com"]
+            },
+            "Action" : ["sts:AssumeRole"]
+          }]
+        },
+        "Path" : "/",
+        "Policies" : [{
+          "PolicyName" : "root",
+          "PolicyDocument" : {
+            "Statement" : [{
+              "Effect" : "Allow",
+              "Action" : "*",
+              "Resource" : "*"
+            }]
+          }
+        }]
+      }
+    },
+    "RootInstanceProfile" : {
+      "Type" : "AWS::IAM::InstanceProfile",
+      "Properties" : {
+        "Path" : "/",
+        "Roles" : [{
+          "Ref" : "RootRole"
+        }]
+      }
+    },
     "User" : {
       "Type" : "AWS::IAM::User",
       "Properties" : {
@@ -45,14 +79,34 @@
         "UserName" : { "Ref": "User" }
       }
     },
+	"ElasticLoadBalancer" : {
+	  "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
+	  "Properties" : {
+	    "AvailabilityZones" : { "Fn::GetAZs" : "" },
+	    "Listeners" : [{
+		  "LoadBalancerPort" : "80",
+		  "InstancePort" : "8080",
+		  "Protocol" : "HTTP"
+	}],
+	    "HealthCheck" : {
+		  "Target" : "HTTP:8080/jenkins/",
+		  "HealthyThreshold" : "3",
+		  "UnhealthyThreshold" : "5",
+		  "Interval" : "30",
+		  "Timeout" : "5"
+	}
+	}
+	},
+
     "WebServerGroup" : {
       "Type" : "AWS::AutoScaling::AutoScalingGroup",
       "Properties" : {
         "AvailabilityZones" : { "Fn::GetAZs" : "" },
+        "LoadBalancerNames" : [{"Ref" : "ElasticLoadBalancer"}],
         "LaunchConfigurationName" : { "Ref" : "LaunchConfig" },
         "MinSize" : "1",
         "MaxSize" : "10",
-        "DesiredCapacity" : "1"
+        "DesiredCapacity" : "3"
       }
     },
 
@@ -110,6 +164,7 @@
 
       "Properties" : {
         "InstanceType" : "m1.small",
+        "IamInstanceProfile" : { "Ref" : "RootInstanceProfile" },
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ {"Ref" : "FrontendGroup"} ],
         "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
