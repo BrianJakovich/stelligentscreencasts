@@ -79,24 +79,25 @@
         "UserName" : { "Ref": "User" }
       }
     },
-	"ElasticLoadBalancer" : {
+
+    "ElasticLoadBalancer" : {
 	  "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
 	  "Properties" : {
-	    "AvailabilityZones" : { "Fn::GetAZs" : "" },
-	    "Listeners" : [{
-		  "LoadBalancerPort" : "80",
-		  "InstancePort" : "8080",
-		  "Protocol" : "HTTP"
-	}],
-	    "HealthCheck" : {
-		  "Target" : "HTTP:8080/jenkins/",
-		  "HealthyThreshold" : "3",
-		  "UnhealthyThreshold" : "5",
-		  "Interval" : "30",
-		  "Timeout" : "5"
+		"AvailabilityZones" : { "Fn::GetAZs" : "" },
+		"Listeners" : [{
+			"LoadBalancerPort" : "80",
+			"InstancePort" : "8080",
+			"Protocol" : "HTTP"
+		}],
+		"HealthCheck" : {
+			"Target" : "HTTP:8080/jenkins/",
+			"HealthyThreshold" : "3",
+			"UnhealthyThreshold" : "5",
+			"Interval" : "30",
+			"Timeout" : "5"
+		}
 	}
-	}
-	},
+},
 
     "WebServerGroup" : {
       "Type" : "AWS::AutoScaling::AutoScalingGroup",
@@ -125,17 +126,17 @@
               }
             },
             "files" : {
-              "/etc/chef/stelligent-validator.pem" : {
-                "source" : "https://s3.amazonaws.com/StelligentScreencasts/stelligent-validator.pem",
+              "/etc/chef/stelligentlabs-validator.pem" : {
+                "source" : "https://s3.amazonaws.com/StelligentResources/stelligentlabs-validator.pem",
                 "authentication" : "S3AccessCreds"
               },
               "/etc/chef/client.rb" : {
                 "content" : { "Fn::Join" : ["", [
                   "log_level        :info\n",
                   "log_location     STDOUT\n",
-                  "chef_server_url  \"https://api.opscode.com/organizations/stelligent\"\n",
-                  "validation_key         \"/etc/chef/stelligent-validator.pem\"\n",
-                  "validation_client_name \"stelligent-validator\""
+                  "chef_server_url  \"https://api.opscode.com/organizations/stelligentlabs\"\n",
+                  "validation_key         \"/etc/chef/stelligentlabs-validator.pem\"\n",
+                  "validation_client_name \"stelligentlabs-validator\""
                 ]] },
                 "mode" : "000644",
                 "owner" : "root",
